@@ -1,34 +1,50 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+} from '@nestjs/common';
 import { ProductService } from './product.service';
+import { Product } from './entities/product.entity';
 import { CreateProductDto } from './dto/create-product.dto';
-import { UpdateProductDto } from './dto/update-product.dto';
 
 @Controller('product')
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
-  @Post()
-  create(@Body() createProductDto: CreateProductDto) {
-    return this.productService.create(createProductDto);
+  //product get all
+  @Get('/all')
+  async getAllProducts(): Promise<Product[]> {
+    return await this.productService.getAllProducts();
   }
 
-  @Get()
-  findAll() {
-    return this.productService.findAll();
+  // 제품 등록
+  @Post('/new')
+  async create(@Body() createProductDto: CreateProductDto): Promise<Product> {
+    return await this.productService.createProduct(createProductDto);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.productService.findOne(+id);
+  // 제품 상세 정보 불러오기
+  @Get('/:id')
+  async getOne(@Param('id') id: string): Promise<Product> {
+    return await this.productService.getDetailProduct(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
-    return this.productService.update(+id, updateProductDto);
+  // 제품 수정
+  @Put('/:id')
+  async updateOne(
+    @Param('id') id: string,
+    @Body() createProductDto: CreateProductDto,
+  ): Promise<Product> {
+    return await this.productService.updateProduct(id, createProductDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.productService.remove(+id);
+  // 제품
+  @Delete('/:id')
+  async deleteOne(@Param('id') id: string): Promise<void> {
+    return await this.productService.deleteProduct(id);
   }
 }

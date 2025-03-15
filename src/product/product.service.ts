@@ -1,26 +1,47 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { Product } from './entities/product.entity';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 import { CreateProductDto } from './dto/create-product.dto';
-import { UpdateProductDto } from './dto/update-product.dto';
 
 @Injectable()
 export class ProductService {
-  create(createProductDto: CreateProductDto) {
-    return 'This action adds a new product';
+  @InjectRepository(Product)
+  private readonly productRepository: Repository<Product>;
+  // 제품 모든 정보를 가져오는 로직
+  async getAllProducts(): Promise<Product[]> {
+    return this.productRepository.find();
   }
 
-  findAll() {
-    return `This action returns all product`;
+  async createProduct(createProductDto: CreateProductDto): Promise<Product> {
+    return this.productRepository.save(createProductDto);
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} product`;
+  async getDetailProduct(id: string): Promise<Product> {
+    const product = await this.productRepository.findOneBy({ id: id });
+    if (!product) {
+      throw new NotFoundException(`Product with id ${id} not found`);
+    }
+    return product;
   }
 
-  update(id: number, updateProductDto: UpdateProductDto) {
-    return `This action updates a #${id} product`;
+  async updateProduct(
+    id: string,
+    updateProductDto: CreateProductDto,
+  ): Promise<Product> {
+    await this.productRepository.update(id, updateProductDto);
+    const product = await this.productRepository.findOneBy({ id });
+    if (product) {
+      return product;
+    }
+    throw new NotFoundException(`Product with id ${id} not found`);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} product`;
+  async deleteProduct(id: string): Promise<void> {
+    const product = await this.productRepository.findOneBy({ id: id });
+    if (!product) {
+      throw new NotFoundException(`Product with id ${id} not found`);
+    }
+    await this.productRepository.delete(id);
   }
 }
