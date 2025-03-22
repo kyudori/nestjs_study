@@ -7,6 +7,8 @@ import { ProductModule } from './product/product.module';
 import { CommentsModule } from './comments/comments.module';
 import * as Joi from '@hapi/joi';
 import { TerminusModule } from '@nestjs/terminus';
+import { UserModule } from './user/user.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -29,6 +31,8 @@ import { TerminusModule } from '@nestjs/terminus';
 
     CommentsModule,
     TerminusModule,
+    UserModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
