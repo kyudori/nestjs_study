@@ -28,7 +28,6 @@ services:
       - "7070:7070"
     depends_on:
       - elicelab_db
-      - elicelab_redis
     networks:
       - elicelab-network
 
