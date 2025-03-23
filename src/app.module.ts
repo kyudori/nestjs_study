@@ -1,38 +1,52 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from './database/database.module';
 import { ProductModule } from './product/product.module';
-import { CommentsModule } from './comments/comments.module';
-import * as Joi from '@hapi/joi';
-import { TerminusModule } from '@nestjs/terminus';
+import { CommentModule } from './comment/comment.module';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
+import { EmailModule } from './email/email.module';
+import { RedisModule } from './redis/redis.module';
+import * as Joi from '@hapi/joi';
 
 @Module({
   imports: [
-    // ✅ 환경 변수 로드 및 유효성 검사
     ConfigModule.forRoot({
       validationSchema: Joi.object({
+        BACKEND_PORT: Joi.number().required(),
         POSTGRES_HOST: Joi.string().required(),
         POSTGRES_PORT: Joi.number().required(),
         POSTGRES_USER: Joi.string().required(),
         POSTGRES_PASSWORD: Joi.string().required(),
         POSTGRES_DB: Joi.string().required(),
+
+        EMAIL_SERVICE: Joi.string().required(),
+        EMAIL_USER: Joi.string().required(),
+        EMAIL_PASSWORD: Joi.string().required(),
+
+        ACCESS_TOKEN_SECRET: Joi.string().required(),
+        ACCESS_TOKEN_EXPIRATION_TIME: Joi.string().required(),
+        REFRESH_TOKEN_SECRET: Joi.string().required(),
+        REFRESH_TOKEN_EXPIRATION_TIME: Joi.string().required(),
+
+        REDIS_HOST: Joi.string().required(),
+        REDIS_PORT: Joi.number().required(),
+        REDIS_TTL: Joi.number().required(),
+
+        GOOGLE_AUTH_CLIENT_ID: Joi.string().required(),
+        GOOGLE_AUTH_CLIENT_SECRET: Joi.number().required(),
+        GOOGLE_AUTH_CALLBACK_URL: Joi.number().required(),
       }),
     }),
-
-    // ✅ DatabaseModule에서 TypeORM 설정 관리
     DatabaseModule,
-
-    // ✅ ProductModule 포함
     ProductModule,
-
-    CommentsModule,
-    TerminusModule,
+    CommentModule,
     UserModule,
     AuthModule,
+    EmailModule,
+    RedisModule,
   ],
   controllers: [AppController],
   providers: [AppService],

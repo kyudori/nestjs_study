@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProductService } from './product.service';
 import { ProductController } from './product.controller';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Product])], // ✅ Product 엔터티 등록
+  imports: [TypeOrmModule.forFeature([Product])],
   controllers: [ProductController],
   providers: [ProductService],
-  exports: [ProductService], // ✅ 다른 모듈에서 사용 가능하게 설정
+  exports: [ProductService],
 })
 export class ProductModule {}

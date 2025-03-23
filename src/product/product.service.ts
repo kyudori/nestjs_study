@@ -1,47 +1,81 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
 import { Repository } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
 import { CreateProductDto } from './dto/create-product.dto';
+import { UpdateProductDto } from './dto/update-product.dto';
 
 @Injectable()
 export class ProductService {
-  @InjectRepository(Product)
-  private readonly productRepository: Repository<Product>;
-  // 제품 모든 정보를 가져오는 로직
-  async getAllProducts(): Promise<Product[]> {
-    return this.productRepository.find();
-  }
+  constructor(
+    @InjectRepository(Product)
+    private readonly productRepository: Repository<Product>,
+  ) {}
 
+  // creat product
   async createProduct(createProductDto: CreateProductDto): Promise<Product> {
-    return this.productRepository.save(createProductDto);
+    const newProdcut = await this.productRepository.create(createProductDto);
+    await this.productRepository.save(newProdcut);
+    return newProdcut;
   }
 
-  async getDetailProduct(id: string): Promise<Product> {
-    const product = await this.productRepository.findOneBy({ id: id });
-    if (!product) {
-      throw new NotFoundException(`Product with id ${id} not found`);
-    }
+  // get all products
+  async getAllProducts(): Promise<Product[]> {
+    return await this.productRepository.find();
+  }
+
+  // get product by id
+  async getProductById(id: string): Promise<Product> {
+    const product = await this.productRepository.findOneBy({ id });
+    if (!product)
+      throw new HttpException('Product not found', HttpStatus.NOT_FOUND);
     return product;
   }
 
-  async updateProduct(
-    id: string,
-    updateProductDto: CreateProductDto,
-  ): Promise<Product> {
-    await this.productRepository.update(id, updateProductDto);
-    const product = await this.productRepository.findOneBy({ id });
-    if (product) {
-      return product;
-    }
-    throw new NotFoundException(`Product with id ${id} not found`);
+  // delete product by id
+  async deleteProductById(id: string): Promise<string> {
+    const deleteResponse = await this.productRepository.delete(id);
+    if (!deleteResponse.affected)
+      throw new HttpException('Product not found', HttpStatus.NOT_FOUND);
+    return 'deleted';
   }
 
-  async deleteProduct(id: string): Promise<void> {
-    const product = await this.productRepository.findOneBy({ id: id });
-    if (!product) {
-      throw new NotFoundException(`Product with id ${id} not found`);
+  async deleteAllProducts(): Promise<string> {
+    const deleteResponse = await this.productRepository
+      .createQueryBuilder()
+      .delete()
+      .from(Product) // Product는 엔티티 이름
+      .execute();
+
+    if (!deleteResponse.affected) {
+      throw new HttpException(
+        'No products found to delete',
+        HttpStatus.NOT_FOUND,
+      );
     }
-    await this.productRepository.delete(id);
+
+    return 'All products deleted successfully';
+  }
+
+  // update product by id
+  async updateProductById(
+    id: string,
+    updateProductDto: UpdateProductDto,
+  ): Promise<string> {
+    const existingProduct = await this.productRepository.findOneBy({ id });
+
+    if (!existingProduct) {
+      throw new HttpException('Product not found', HttpStatus.NOT_FOUND);
+    }
+
+    // Merge existing data with new data
+    const updatedProduct = {
+      ...existingProduct,
+      ...updateProductDto,
+    };
+
+    await this.productRepository.save(updatedProduct);
+
+    return 'updated';
   }
 }

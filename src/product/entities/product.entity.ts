@@ -1,29 +1,35 @@
 import {
-  BaseEntity,
   Column,
   Entity,
+  JoinColumn,
+  JoinTable,
+  ManyToMany,
   OneToMany,
-  PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Comments } from '../../comments/entities/comment.entity';
+import { BaseEntity } from '../../common/base.entity';
+import { Comment } from '../../comment/entities/comment.entity';
 
 @Entity()
 export class Product extends BaseEntity {
-  @PrimaryGeneratedColumn('uuid')
-  public id: string;
+  @Column({ unique: true })
+  name: string;
 
   @Column()
-  public name: string;
+  description: string;
 
   @Column()
-  public description: string;
+  price: number;
 
   @Column()
-  public price: number;
+  productImg: string;
 
-  @Column()
-  public imageUrl: string;
+  // ✅ 단순 문자열 배열로 저장 (CSV 형식)
+  @Column('simple-array')
+  public categories: string[];
 
-  @OneToMany(() => Comments, (comment) => comment.product, { cascade: true })
-  comments: Comment[];
+  @OneToMany(() => Comment, (comment) => comment.product, {
+    eager: true,
+    cascade: true,
+  })
+  public comments: Comment[];
 }
